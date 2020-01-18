@@ -1,0 +1,19 @@
+<resources>
+
+    <style name="AppTheme" parent="Theme.AppCompat.Light.NoActionBar">
+        <item name="colorPrimary">@color/md_blue_gray_700</item>
+        <item name="colorPrimaryDark">@color/md_blue_gray_700</item>
+        <item name="colorAccent">@color/md_yellow_A700</item>
+
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowActionBarOverlay">true</item>
+        <item name="android:windowBackground">@drawable/gradient_gray</item>
+    </style>
+
+    <style name="AppTheme.Gray" parent="AppTheme">
+        <item name="colorPrimaryDark">@color/md_blue_gray_700</item>
+        <item name="android:windowBackground">@drawable/gradient_gray</item>
+    </style>
+
+</resources>
