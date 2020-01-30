@@ -8,6 +8,7 @@
     android:background="@color/background"
     tools:context=".HomeFragment">
 
+
     <TextView
         android:id="@+id/text_view"
         android:layout_width="match_parent"
@@ -77,29 +78,29 @@
 
         <Button
             android:id="@+id/stop_recorder_icon"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+            android:layout_width="160dp"
+            android:layout_height="wrap_content"
             android:padding="8dp"
             android:layout_margin="16dp"
             android:background="#ffff"
-            android:text="stop" />
+            android:text="stop Recording" />
 
         <Button
             android:id="@+id/play_icon"
-            android:layout_width="160dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
             android:background="#F0E6E6"
             android:layout_margin="16dp"
-            android:text="play recorded file" />
+            android:text="play" />
 
         <Button
             android:id="@+id/stop_recorded_file"
-            android:layout_width="160dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:padding="8dp"
             android:background="#F0E6E6"
-            android:text="stop rocorded file" />
+            android:text="stop" />
 
 
     </LinearLayout>

@@ -4,8 +4,10 @@ package com.example.iustvoicespeech;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+
 import android.media.MediaPlayer;
 import android.media.MediaRecorder;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 
@@ -25,9 +27,17 @@ import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.example.iustvoicespeech.speech.MessageDialogFragment;
+
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
-import java.lang.reflect.Array;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.UUID;
 
 import static android.app.Activity.RESULT_OK;
@@ -36,7 +46,7 @@ import static android.app.Activity.RESULT_OK;
 /**
  * A simple {@link Fragment} subclass.
  */
-public class HomeFragment extends Fragment {
+public class HomeFragment extends Fragment implements MessageDialogFragment.Listener {
     private static final int REQUEST_PERMISSION_CODE = 1000;
 
 
@@ -56,6 +66,10 @@ public class HomeFragment extends Fragment {
     private String[] mTextArray;
     private int index = 0;
 
+    String mSavedPath;
+    File mDestinationFile;
+    private File mDestinationDirectory;
+
 
     public static HomeFragment newInstance() {
 
@@ -69,10 +83,15 @@ public class HomeFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        //   mRecorder = Recorder.getInstance();
+
+        mSavedPath = Environment.getExternalStorageDirectory().getAbsolutePath() + "/" + "IUST Recording Folder";
+        mDestinationDirectory = new File(mSavedPath);
+        if (!mDestinationDirectory.exists()) {
+            mDestinationDirectory.mkdirs();
+        }
 
         mTextArray = new String[25];
-        mTextArray = new String[]{"تهران از آلوده ترین شهر های ایران است.",
+        mTextArray = new String[]{"تهران یکی از آلوده ترین شهر های ایران است.",
                 "آرامگاه سعدی در شیراز است.",
                 "امروز چرا ناراحتی؟",
                 "به خانه برمی گردیم",
@@ -121,13 +140,22 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
-    private void setAudioFileName() {
-        outputFile = Environment.getExternalStorageDirectory().getAbsolutePath() +
-                "/" +
-                UUID.randomUUID().toString() +
-                "_sentence_"+
-                index +
-                "_audio_record.3gp";
+    private File setAudioFileName() {
+        outputFile =
+                "sentence_" + index +"_"+ UUID.randomUUID().toString()+ ".wav";
+
+        mDestinationFile = new File(mDestinationDirectory, outputFile);
+
+        try {
+            FileOutputStream outputStream = new FileOutputStream(mDestinationFile);
+            outputStream.flush();
+            outputStream.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return mDestinationFile;
     }
 
     private void clickListener() {
@@ -154,8 +182,8 @@ public class HomeFragment extends Fragment {
                 mPlay.setEnabled(false);
                 mRecord.setEnabled(true);
                 mRecord.setBackground(getResources().getDrawable(R.drawable.ic_record));
-                if(index == 0)
-                    index = mTextArray.length-1;
+                if (index == 0)
+                    index = mTextArray.length - 1;
                 index--;
                 mTextView.setText(mTextArray[index]);
             }
@@ -173,8 +201,8 @@ public class HomeFragment extends Fragment {
                     mPlay.setEnabled(false);
                     mRecord.setBackground(getResources().getDrawable(R.drawable.ic_disabled_record));
 
-                    setAudioFileName();
-                    setUpMediaRecorder();
+                        setUpMediaRecorder(setAudioFileName());
+
                     try {
                         myAudioRecorder.prepare();
                         myAudioRecorder.start();
@@ -202,7 +230,7 @@ public class HomeFragment extends Fragment {
                 if (mMediaPlayer != null) {
                     mMediaPlayer.stop();
                     mMediaPlayer.release();
-                    setUpMediaRecorder();
+                    setUpMediaRecorder(mDestinationFile);
                 }
             }
         });
@@ -218,9 +246,13 @@ public class HomeFragment extends Fragment {
 
                 mMediaPlayer = new MediaPlayer();
                 try {
-                    mMediaPlayer.setDataSource(outputFile);
+                   String s= mSavedPath+"/" +outputFile;
+                    mMediaPlayer.setDataSource(s);
                     mMediaPlayer.prepare();
-                } catch (IOException e) {
+                } catch (FileNotFoundException e) {
+                    e.printStackTrace();
+                }
+                catch (IOException e) {
                     e.printStackTrace();
                 }
                 if (mMediaPlayer.isPlaying())
@@ -243,12 +275,12 @@ public class HomeFragment extends Fragment {
         });
     }
 
-    private void setUpMediaRecorder() {
+    private void setUpMediaRecorder(File destination) {
         myAudioRecorder = new MediaRecorder();
         myAudioRecorder.setAudioSource(MediaRecorder.AudioSource.MIC);
         myAudioRecorder.setOutputFormat(MediaRecorder.OutputFormat.THREE_GPP);
         myAudioRecorder.setAudioEncoder(MediaRecorder.OutputFormat.AMR_NB);
-        myAudioRecorder.setOutputFile(outputFile);
+        myAudioRecorder.setOutputFile(Uri.parse(String.valueOf(destination)).toString());
 
     }
 
@@ -273,6 +305,29 @@ public class HomeFragment extends Fragment {
                     mTextViewVoice.setText(result.get(0));
                 }
                 break;
+        }
+
+        if (requestCode == 1111) {
+            File folder = new File(Environment.getExternalStorageDirectory(), "/Sounds");
+            long folderModi = folder.lastModified();
+
+            FilenameFilter filter = new FilenameFilter() {
+                public boolean accept(File dir, String name) {
+                    return (name.endsWith("3ga"));
+                }
+            };
+
+            File[] folderList = folder.listFiles(filter);
+
+            String recentName = "";
+
+            for (int i = 0; i < folderList.length; i++) {
+                long fileModi = folderList[i].lastModified();
+
+                if (folderModi == fileModi) {
+                    recentName = folderList[i].getName();
+                }
+            }
         }
     }
 
@@ -300,5 +355,10 @@ public class HomeFragment extends Fragment {
             }
             break;
         }
+    }
+
+    @Override
+    public void onMessageDialogDismissed() {
+
     }
 }
